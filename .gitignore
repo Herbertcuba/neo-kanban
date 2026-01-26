@@ -43,3 +43,15 @@ dist/
 # Temporary files
 tmp/
 temp/
+
+# EXCLUDE TASK FOLDERS - Don't commit actual tasks!
+../Backlog/
+../Todo/
+../Doing/
+../Done/
+../tasks.json
+../index.html
+
+# Exclude any task-related files in parent directory
+../*.json
+../WORKFLOW.md
