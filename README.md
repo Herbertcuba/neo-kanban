@@ -14,13 +14,15 @@ Traditional Kanban tools lock your data in proprietary formats. Neo Kanban store
 
 - **📁 Real File System Integration** — Tasks are actual folders you can access via Finder
 - **📝 Markdown Descriptions** — Rich task descriptions stored as `description.md` files  
+- **💬 Feedback System** — `feedback.md` files for collaboration and guidance
 - **🎯 Drag & Drop** — Move tasks between columns by dragging (moves actual folders)
 - **⚡ Real-Time Sync** — Changes reflect instantly via WebSocket connections
 - **🔍 Live File Watching** — External changes in Finder update the UI automatically
 - **💻 Native Finder Integration** — Open task folders directly from the web interface
 - **☁️ iCloud Ready** — Works perfectly with iCloud Drive for multi-device access
-- **✏️ In-App Editing** — Edit descriptions directly in the beautiful web interface
+- **✏️ In-App Editing** — Edit descriptions and feedback directly in the beautiful web interface
 - **📊 File Management** — See and manage all files within each task folder
+- **🏷️ Smart Tagging** — Organize tasks with #talks #business #finance tags
 
 ## 🏗️ Architecture
 
@@ -35,18 +37,22 @@ kanban-app/
 │   │   ├── components/   # Reusable UI components
 │   │   └── App.css       # Styling
 │   └── package.json
-└── start.sh             # One-command startup script
+├── start.sh             # One-command startup script
+└── restart.sh           # Auto-restart after rebuilds
 ```
 
 **Task Structure:**
 ```
-Backlog/
-├── project-alpha/
+Ideas/
+├── ai-transformation-talk/
 │   ├── description.md    # Main task description
+│   ├── feedback.md       # Herbert's guidance & corrections
+│   ├── article.md        # Auto-generated articles (for #talks)
 │   ├── research.pdf      # Supporting documents
 │   └── notes.txt         # Additional files
 └── feature-beta/
-    └── description.md
+    ├── description.md
+    └── feedback.md
 ```
 
 ## 🚀 Quick Start
@@ -69,11 +75,17 @@ Backlog/
    ./start.sh
    ```
 
-3. **Open your browser:**
+3. **Browser opens automatically:**
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:3001
 
-That's it! The script handles dependency installation and server startup automatically.
+That's it! The script handles dependency installation, server startup, and browser launch automatically.
+
+### After Making Changes
+
+```bash
+./restart.sh    # Stops existing servers and restarts
+```
 
 ## 🎯 Usage Guide
 
@@ -82,7 +94,13 @@ That's it! The script handles dependency installation and server startup automat
 1. Click **"+ New Task"** in any column
 2. Enter a descriptive task name
 3. Press Enter or click Create
-4. A new folder is created with a `description.md` file
+4. A new folder is created with `description.md` and `feedback.md` files
+
+### Adding Feedback
+
+1. **Click on any task** to open the details modal
+2. **Edit feedback section** to provide guidance and corrections
+3. **Save changes** — they're written directly to `feedback.md`
 
 ### Moving Tasks
 
@@ -92,9 +110,9 @@ That's it! The script handles dependency installation and server startup automat
 
 ### Editing Descriptions
 
-1. **Click on any task** to open the details modal
-2. **Click the Edit button** (pencil icon) to modify the description
-3. **Save changes** — they're written directly to `description.md`
+1. **Click the Edit button** (pencil icon) in the description section
+2. **Modify content** directly in the editor
+3. **Save changes** — they're written to `description.md`
 
 ### Adding Files
 
@@ -104,7 +122,7 @@ That's it! The script handles dependency installation and server startup automat
 
 ### External Editing
 
-- Edit `description.md` files in any text editor
+- Edit `.md` files in any text editor
 - Add/remove files via Finder
 - Changes appear **instantly** in the web interface
 
@@ -133,6 +151,7 @@ npm start          # React dev server with hot reload
 | `POST` | `/api/tasks/:status` | Create new task |
 | `PUT` | `/api/tasks/:from/:id/move/:to` | Move task between columns |
 | `PUT` | `/api/tasks/:status/:id/description` | Update task description |
+| `PUT` | `/api/tasks/:status/:id/feedback` | Update task feedback |
 | `POST` | `/api/tasks/:status/:id/open` | Open task folder in Finder |
 
 ### WebSocket Events
@@ -140,38 +159,28 @@ npm start          # React dev server with hot reload
 - `file_change` — File system change detected
 - `task_created` — New task created  
 - `task_moved` — Task moved between columns
-- `task_updated` — Task description updated
+- `task_updated` — Task description/feedback updated
 
-## 📋 Task Structure
+## 📋 Task Workflow
 
-Each task is a folder containing:
+Each task follows a structured workflow:
 
-```markdown
-# Task Title
-
-Created: 2026-01-25
-Status: Backlog
-Priority: High
-
-## Description
-
-Detailed description of what needs to be done...
-
-## Objectives
-
-- [ ] First objective
-- [ ] Second objective  
-- [ ] Third objective
-
-## Links
-
-- [Relevant documentation](https://example.com)
-- [Design mockups](https://figma.com/...)
-
-## Notes
-
-Additional notes and thoughts...
 ```
+💡 Ideas → 📋 Backlog → 📌 Todo → 🔨 Doing → 👀 Review → ✅ Done / ❌ Cancelled
+```
+
+### Feedback Integration
+
+- **Ideas → Backlog:** Add initial guidance
+- **Backlog → Todo:** Final requirements before execution  
+- **Review:** Comments on deliverables before approval
+
+### Smart Features
+
+- **Auto-article creation** for #talks tasks
+- **Real-time collaboration** via feedback system
+- **File system integration** with instant sync
+- **Professional deliverables** ready for immediate use
 
 ## 🔧 Configuration
 
@@ -186,7 +195,8 @@ const STATUS_DIRS = {
   'todo': 'Todo',
   'doing': 'Doing',
   'review': 'Review',
-  'done': 'Done'
+  'done': 'Done',
+  'cancelled': 'Cancelled'
 };
 ```
 

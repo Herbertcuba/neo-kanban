@@ -63,6 +63,10 @@ start_servers() {
     echo "🌐 Frontend UI: http://localhost:3000"
     echo "🔌 WebSocket: ws://localhost:3002"
     echo ""
+    echo "🚀 Opening browser..."
+    sleep 3
+    open http://localhost:3000
+    echo ""
     echo "Press Ctrl+C to stop both servers"
     
     # Wait for Ctrl+C
