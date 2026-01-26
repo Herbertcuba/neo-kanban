@@ -15,6 +15,8 @@ const STATUS_CONFIG = {
   cancelled: { title: '❌ Cancelled', color: '#ef4444' }
 };
 
+const COLUMN_ORDER = ['ideas', 'backlog', 'todo', 'doing', 'review', 'done', 'cancelled'];
+
 function App() {
   const [tasks, setTasks] = useState({
     backlog: [],
@@ -39,6 +41,20 @@ function App() {
       }
     };
   }, []);
+
+  // Global keyboard navigation
+  useEffect(() => {
+    const handleGlobalKeyPress = (e) => {
+      // Only handle Enter when no modal is open and not in input fields
+      if (e.key === 'Enter' && !selectedTask && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        openFirstAvailableTask();
+      }
+    };
+
+    document.addEventListener('keydown', handleGlobalKeyPress);
+    return () => document.removeEventListener('keydown', handleGlobalKeyPress);
+  }, [selectedTask, tasks]);
 
   const setupWebSocket = () => {
     const ws = new WebSocket('ws://localhost:3002');
@@ -138,6 +154,77 @@ function App() {
     }
   };
 
+  // Navigation helpers
+  const openFirstAvailableTask = () => {
+    for (const column of COLUMN_ORDER) {
+      if (tasks[column] && tasks[column].length > 0) {
+        setSelectedTask({ ...tasks[column][0], status: column, columnIndex: 0, taskIndex: 0 });
+        return;
+      }
+    }
+  };
+
+  const navigateTask = (direction) => {
+    if (!selectedTask) return;
+
+    const { status, taskIndex, columnIndex } = selectedTask;
+    
+    if (direction === 'up' || direction === 'down') {
+      // Navigate within the same column
+      const currentTasks = tasks[status] || [];
+      let newIndex = taskIndex;
+      
+      if (direction === 'up') {
+        newIndex = Math.max(0, taskIndex - 1);
+      } else {
+        newIndex = Math.min(currentTasks.length - 1, taskIndex + 1);
+      }
+      
+      if (newIndex !== taskIndex && currentTasks[newIndex]) {
+        setSelectedTask({ 
+          ...currentTasks[newIndex], 
+          status, 
+          columnIndex: COLUMN_ORDER.indexOf(status), 
+          taskIndex: newIndex 
+        });
+      }
+    } else if (direction === 'left' || direction === 'right') {
+      // Navigate to adjacent columns
+      const currentColumnIndex = COLUMN_ORDER.indexOf(status);
+      let targetColumnIndex = currentColumnIndex;
+      
+      if (direction === 'left') {
+        // Search left for a column with tasks
+        for (let i = currentColumnIndex - 1; i >= 0; i--) {
+          if (tasks[COLUMN_ORDER[i]] && tasks[COLUMN_ORDER[i]].length > 0) {
+            targetColumnIndex = i;
+            break;
+          }
+        }
+      } else {
+        // Search right for a column with tasks
+        for (let i = currentColumnIndex + 1; i < COLUMN_ORDER.length; i++) {
+          if (tasks[COLUMN_ORDER[i]] && tasks[COLUMN_ORDER[i]].length > 0) {
+            targetColumnIndex = i;
+            break;
+          }
+        }
+      }
+      
+      // If we found a different column with tasks, switch to it
+      if (targetColumnIndex !== currentColumnIndex) {
+        const targetColumn = COLUMN_ORDER[targetColumnIndex];
+        const targetTask = tasks[targetColumn][0];
+        setSelectedTask({ 
+          ...targetTask, 
+          status: targetColumn, 
+          columnIndex: targetColumnIndex, 
+          taskIndex: 0 
+        });
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="app">
@@ -163,6 +250,12 @@ function App() {
           </button>
         </div>
       </header>
+
+      {!selectedTask && (
+        <div className="keyboard-hint">
+          Press Enter to open first task • Click any task to start navigation
+        </div>
+      )}
 
       {status.message && (
         <div className={`status-message ${status.type}`}>
@@ -198,7 +291,10 @@ function App() {
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
                             className={`task ${snapshot.isDragging ? 'dragging' : ''}`}
-                            onClick={() => openTaskModal(task, status)}
+                            onClick={() => {
+                              const columnIndex = COLUMN_ORDER.indexOf(status);
+                              setSelectedTask({ ...task, status, columnIndex, taskIndex: index });
+                            }}
                           >
                             <div className="task-title">{task.title}</div>
                             <div className="task-meta">
@@ -272,6 +368,7 @@ function App() {
           onClose={() => setSelectedTask(null)}
           onOpenInFinder={() => openInFinder(selectedTask, selectedTask.status)}
           onUpdate={loadTasks}
+          onNavigate={navigateTask}
         />
       )}
     </div>

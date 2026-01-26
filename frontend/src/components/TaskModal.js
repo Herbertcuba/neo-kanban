@@ -3,7 +3,7 @@ import axios from 'axios';
 import { X, ExternalLink, RefreshCw, Edit, Save } from 'lucide-react';
 import './TaskModal.css';
 
-const TaskModal = ({ task, onClose, onOpenInFinder, onUpdate }) => {
+const TaskModal = ({ task, onClose, onOpenInFinder, onUpdate, onNavigate }) => {
   const [description, setDescription] = useState('');
   const [feedback, setFeedback] = useState('');
   const [loading, setLoading] = useState(true);
@@ -62,16 +62,35 @@ const TaskModal = ({ task, onClose, onOpenInFinder, onUpdate }) => {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Escape') {
-      if (editing) {
-        setEditing(false);
-        setEditedDescription(description);
-      } else if (editingFeedback) {
-        setEditingFeedback(false);
-        setEditedFeedback(feedback);
-      } else {
-        onClose();
+    // Don't handle navigation keys if we're editing
+    if (editing || editingFeedback) {
+      if (e.key === 'Escape') {
+        if (editing) {
+          setEditing(false);
+          setEditedDescription(description);
+        } else if (editingFeedback) {
+          setEditingFeedback(false);
+          setEditedFeedback(feedback);
+        }
       }
+      return;
+    }
+
+    // Handle navigation and modal controls
+    if (e.key === 'Escape') {
+      onClose();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      onNavigate('up');
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      onNavigate('down');
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      onNavigate('left');
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      onNavigate('right');
     }
   };
 
@@ -137,7 +156,14 @@ const TaskModal = ({ task, onClose, onOpenInFinder, onUpdate }) => {
     <div className="modal-overlay" onKeyDown={handleKeyPress} tabIndex={0}>
       <div className="modal">
         <div className="modal-header">
-          <h2 className="modal-title">{task.title}</h2>
+          <div className="modal-title-section">
+            <h2 className="modal-title">{task.title}</h2>
+            <div className="navigation-hint">
+              <span className="nav-keys">↑↓ Next task</span>
+              <span className="nav-keys">←→ Next column</span>
+              <span className="nav-keys">Esc Close</span>
+            </div>
+          </div>
           <button className="modal-close" onClick={onClose}>
             <X size={20} />
           </button>
