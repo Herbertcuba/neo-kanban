@@ -128,6 +128,22 @@
   overflow-y: auto;
 }
 
+.feedback-display {
+  background: rgba(255,255,255,0.05);
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 3px solid #fbbf24;
+  color: #e5e7eb;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  font-size: 0.9rem;
+  margin: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  font-style: italic;
+}
+
 .description-loading {
   display: flex;
   align-items: center;

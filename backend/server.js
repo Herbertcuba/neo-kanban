@@ -143,6 +143,7 @@ app.get('/api/tasks/:status/:id', async (req, res) => {
     
     const taskPath = path.join(TASKS_BASE_PATH, dirName, id);
     const descriptionPath = path.join(taskPath, 'description.md');
+    const feedbackPath = path.join(taskPath, 'feedback.md');
     
     if (!await fs.pathExists(taskPath)) {
       return res.status(404).json({ error: 'Task not found' });
@@ -153,6 +154,11 @@ app.get('/api/tasks/:status/:id', async (req, res) => {
       description = await fs.readFile(descriptionPath, 'utf8');
     }
     
+    let feedback = '';
+    if (await fs.pathExists(feedbackPath)) {
+      feedback = await fs.readFile(feedbackPath, 'utf8');
+    }
+    
     const files = await fs.readdir(taskPath);
     const fileCount = files.filter(f => f !== '.DS_Store').length;
     
@@ -160,6 +166,7 @@ app.get('/api/tasks/:status/:id', async (req, res) => {
       id,
       status,
       description,
+      feedback,
       files: fileCount,
       path: taskPath
     });
@@ -311,6 +318,35 @@ app.put('/api/tasks/:status/:id/description', async (req, res) => {
   } catch (error) {
     console.error('Error updating task description:', error);
     res.status(500).json({ error: 'Failed to update task description' });
+  }
+});
+
+// Update task feedback
+app.put('/api/tasks/:status/:id/feedback', async (req, res) => {
+  try {
+    const { status, id } = req.params;
+    const { feedback } = req.body;
+    
+    const dirName = STATUS_DIRS[status];
+    if (!dirName) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+    
+    const taskPath = path.join(TASKS_BASE_PATH, dirName, id);
+    const feedbackPath = path.join(taskPath, 'feedback.md');
+    
+    if (!await fs.pathExists(taskPath)) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+    
+    await fs.writeFile(feedbackPath, feedback);
+    
+    broadcast({ type: 'task_updated', status, id });
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error updating task feedback:', error);
+    res.status(500).json({ error: 'Failed to update task feedback' });
   }
 });
 

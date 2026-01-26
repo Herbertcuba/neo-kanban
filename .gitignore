@@ -49,9 +49,15 @@ temp/
 ../Todo/
 ../Doing/
 ../Done/
+../Review/
+../Ideas/
+../Cancelled/
 ../tasks.json
 ../index.html
 
 # Exclude any task-related files in parent directory
 ../*.json
 ../WORKFLOW.md
+
+# Exclude feedback files - these contain personal guidance
+**/feedback.md

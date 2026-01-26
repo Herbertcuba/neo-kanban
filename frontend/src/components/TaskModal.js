@@ -5,9 +5,12 @@ import './TaskModal.css';
 
 const TaskModal = ({ task, onClose, onOpenInFinder, onUpdate }) => {
   const [description, setDescription] = useState('');
+  const [feedback, setFeedback] = useState('');
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
+  const [editingFeedback, setEditingFeedback] = useState(false);
   const [editedDescription, setEditedDescription] = useState('');
+  const [editedFeedback, setEditedFeedback] = useState('');
 
   useEffect(() => {
     loadTaskDetails();
@@ -19,10 +22,13 @@ const TaskModal = ({ task, onClose, onOpenInFinder, onUpdate }) => {
       const response = await axios.get(`/api/tasks/${task.status}/${task.id}`);
       setDescription(response.data.description);
       setEditedDescription(response.data.description);
+      setFeedback(response.data.feedback || '');
+      setEditedFeedback(response.data.feedback || '');
       setLoading(false);
     } catch (error) {
       console.error('Error loading task details:', error);
       setDescription(task.description || 'Error loading description');
+      setFeedback('');
       setLoading(false);
     }
   };
@@ -41,11 +47,28 @@ const TaskModal = ({ task, onClose, onOpenInFinder, onUpdate }) => {
     }
   };
 
+  const saveFeedback = async () => {
+    try {
+      await axios.put(`/api/tasks/${task.status}/${task.id}/feedback`, {
+        feedback: editedFeedback
+      });
+      setFeedback(editedFeedback);
+      setEditingFeedback(false);
+      onUpdate();
+    } catch (error) {
+      console.error('Error saving feedback:', error);
+      alert('Error saving feedback. Please try again.');
+    }
+  };
+
   const handleKeyPress = (e) => {
     if (e.key === 'Escape') {
       if (editing) {
         setEditing(false);
         setEditedDescription(description);
+      } else if (editingFeedback) {
+        setEditingFeedback(false);
+        setEditedFeedback(feedback);
       } else {
         onClose();
       }
@@ -176,6 +199,55 @@ const TaskModal = ({ task, onClose, onOpenInFinder, onUpdate }) => {
               </div>
             ) : (
               <pre className="task-description">{description}</pre>
+            )}
+          </div>
+
+          <div className="modal-section">
+            <div className="section-header">
+              <h3>💬 Herbert's feedback</h3>
+              <div className="section-buttons">
+                <button 
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => setEditingFeedback(!editingFeedback)}
+                  title={editingFeedback ? "Cancel edit" : "Edit feedback"}
+                >
+                  <Edit size={14} />
+                </button>
+              </div>
+            </div>
+            
+            {editingFeedback ? (
+              <div className="description-editor">
+                <textarea
+                  value={editedFeedback}
+                  onChange={(e) => setEditedFeedback(e.target.value)}
+                  className="description-textarea"
+                  placeholder="Add your feedback, corrections, and adjustments for Neo..."
+                  style={{minHeight: '150px'}}
+                  autoFocus
+                />
+                <div className="editor-buttons">
+                  <button 
+                    className="btn btn-primary btn-sm"
+                    onClick={saveFeedback}
+                  >
+                    <Save size={14} /> Save
+                  </button>
+                  <button 
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => {
+                      setEditingFeedback(false);
+                      setEditedFeedback(feedback);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <pre className="task-description feedback-display">
+                {feedback || 'No feedback yet. Add guidance for Neo before moving to the next phase.'}
+              </pre>
             )}
           </div>
 
