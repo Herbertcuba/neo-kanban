@@ -11,6 +11,7 @@ const TaskModal = ({ task, onClose, onOpenInFinder, onUpdate, onNavigate }) => {
   const [editingFeedback, setEditingFeedback] = useState(false);
   const [editedDescription, setEditedDescription] = useState('');
   const [editedFeedback, setEditedFeedback] = useState('');
+  const [fileNames, setFileNames] = useState([]);
 
   useEffect(() => {
     loadTaskDetails();
@@ -24,6 +25,7 @@ const TaskModal = ({ task, onClose, onOpenInFinder, onUpdate, onNavigate }) => {
       setEditedDescription(response.data.description);
       setFeedback(response.data.feedback || '');
       setEditedFeedback(response.data.feedback || '');
+      setFileNames(response.data.fileNames || []);
       setLoading(false);
     } catch (error) {
       console.error('Error loading task details:', error);
@@ -118,26 +120,9 @@ const TaskModal = ({ task, onClose, onOpenInFinder, onUpdate, onNavigate }) => {
   };
 
   const renderFileList = () => {
-    const files = ['description.md']; // Always include description.md
-    
-    // Add mock files if more than 1 file exists
-    if (task.files > 1) {
-      const additionalFiles = [
-        'notes.txt',
-        'research.pdf',
-        'links.md',
-        'meeting-notes.md',
-        'resources.pdf'
-      ];
-      
-      for (let i = 1; i < task.files; i++) {
-        if (additionalFiles[i-1]) {
-          files.push(additionalFiles[i-1]);
-        } else {
-          files.push(`document${i}.txt`);
-        }
-      }
-    }
+    const files = (fileNames && fileNames.length > 0)
+      ? [...fileNames].sort((a, b) => a.localeCompare(b))
+      : ['description.md']; // Fallback
 
     return files.map((filename, index) => (
       <div key={index} className="file-item">
@@ -145,7 +130,9 @@ const TaskModal = ({ task, onClose, onOpenInFinder, onUpdate, onNavigate }) => {
         <div className="file-info">
           <div className="file-name">{filename}</div>
           <div className="file-type">
-            {filename === 'description.md' ? 'Main Description' : 'Document'}
+            {filename === 'description.md'
+              ? 'Main Description'
+              : (filename.endsWith('/') ? 'Folder' : 'File')}
           </div>
         </div>
       </div>

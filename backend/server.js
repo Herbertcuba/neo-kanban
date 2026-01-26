@@ -81,11 +81,13 @@ async function scanTasks() {
             const descriptionPath = path.join(itemPath, 'description.md');
             let description = '';
             let fileCount = 0;
+            let fileNames = [];
             
             try {
-              // Count files in directory
+              // List files in directory
               const files = await fs.readdir(itemPath);
-              fileCount = files.filter(f => f !== '.DS_Store').length;
+              fileNames = files.filter(f => f !== '.DS_Store');
+              fileCount = fileNames.length;
               
               // Read description if it exists
               if (await fs.pathExists(descriptionPath)) {
@@ -104,6 +106,7 @@ async function scanTasks() {
               title: titleMatch ? titleMatch[1] : item.replace(/-/g, ' '),
               description: description || `# ${item.replace(/-/g, ' ')}\n\nCreated via file system scan.`,
               files: fileCount,
+              fileNames,
               created: dateMatch ? dateMatch[1] : new Date().toISOString().split('T')[0],
               path: itemPath
             });
@@ -160,7 +163,8 @@ app.get('/api/tasks/:status/:id', async (req, res) => {
     }
     
     const files = await fs.readdir(taskPath);
-    const fileCount = files.filter(f => f !== '.DS_Store').length;
+    const fileNames = files.filter(f => f !== '.DS_Store');
+    const fileCount = fileNames.length;
     
     res.json({
       id,
@@ -168,6 +172,7 @@ app.get('/api/tasks/:status/:id', async (req, res) => {
       description,
       feedback,
       files: fileCount,
+      fileNames,
       path: taskPath
     });
   } catch (error) {
