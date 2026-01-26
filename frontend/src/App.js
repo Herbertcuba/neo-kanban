@@ -6,10 +6,13 @@ import TaskModal from './components/TaskModal';
 import './App.css';
 
 const STATUS_CONFIG = {
+  ideas: { title: '💡 Ideas', color: '#a78bfa' },
   backlog: { title: '📋 Backlog', color: '#94a3b8' },
   todo: { title: '📌 Todo', color: '#60a5fa' },
   doing: { title: '🔨 Doing', color: '#fbbf24' },
-  done: { title: '✅ Done', color: '#4ade80' }
+  review: { title: '👀 Review', color: '#f59e0b' },
+  done: { title: '✅ Done', color: '#4ade80' },
+  cancelled: { title: '❌ Cancelled', color: '#ef4444' }
 };
 
 function App() {

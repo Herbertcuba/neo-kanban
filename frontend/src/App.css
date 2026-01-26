@@ -107,9 +107,9 @@
 
 .board {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   gap: 20px;
-  max-width: 1400px;
+  max-width: 1800px;
   margin: 0 auto;
 }
 
@@ -277,6 +277,12 @@
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+}
+
+@media (max-width: 1400px) {
+  .board {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 @media (max-width: 900px) {

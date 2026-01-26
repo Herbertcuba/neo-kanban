@@ -11,10 +11,13 @@ const PORT = 3001;
 // Base path for tasks
 const TASKS_BASE_PATH = path.join(__dirname, '../../');
 const STATUS_DIRS = {
-  'backlog': 'Backlog',
+  'ideas': 'Ideas',
+  'backlog': 'Backlog', 
   'todo': 'Todo',
-  'doing': 'Doing', 
-  'done': 'Done'
+  'doing': 'Doing',
+  'review': 'Review',
+  'done': 'Done',
+  'cancelled': 'Cancelled'
 };
 
 // Middleware
