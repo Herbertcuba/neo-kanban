@@ -97,14 +97,25 @@ async function scanTasks() {
               console.error(`Error reading task ${item}:`, error);
             }
             
-            // Extract title and creation date from description or use folder name
+            // Extract title, creation date and tags from description
             const titleMatch = description.match(/^#\s+(.+)/m);
             const dateMatch = description.match(/Created:\s*(\d{4}-\d{2}-\d{2})/i);
+            const tagsMatch = description.match(/Tags:\s*(.+)/i) || description.match(/#\w+/g);
             
+            let tags = [];
+            if (tagsMatch) {
+              if (typeof tagsMatch[0] === 'string' && tagsMatch[0].startsWith('Tags:')) {
+                tags = tagsMatch[1].split(/[\s,]+/).map(t => t.trim().replace(/^#/, '')).filter(t => t);
+              } else {
+                tags = tagsMatch.map(t => t.replace(/^#/, ''));
+              }
+            }
+
             tasks[status].push({
               id: item,
               title: titleMatch ? titleMatch[1] : item.replace(/-/g, ' '),
               description: description || `# ${item.replace(/-/g, ' ')}\n\nCreated via file system scan.`,
+              tags: tags,
               files: fileCount,
               fileNames,
               created: dateMatch ? dateMatch[1] : new Date().toISOString().split('T')[0],
