@@ -11,11 +11,12 @@ const STATUS_CONFIG = {
   todo: { title: '📌 Todo', color: '#60a5fa' },
   doing: { title: '🔨 Doing', color: '#fbbf24' },
   review: { title: '👀 Review', color: '#f59e0b' },
+  'blog-publish': { title: '🌐 Blog Publish', color: '#b0ff00' },
   done: { title: '✅ Done', color: '#4ade80' },
   cancelled: { title: '❌ Cancelled', color: '#ef4444' }
 };
 
-const COLUMN_ORDER = ['ideas', 'backlog', 'todo', 'doing', 'review', 'done', 'cancelled'];
+const COLUMN_ORDER = ['ideas', 'backlog', 'todo', 'doing', 'review', 'blog-publish', 'done', 'cancelled'];
 
 function App() {
   const [tasks, setTasks] = useState({

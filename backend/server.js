@@ -16,6 +16,7 @@ const STATUS_DIRS = {
   'todo': 'Todo',
   'doing': 'Doing',
   'review': 'Review',
+  'blog-publish': 'Blog-publish',
   'done': 'Done',
   'cancelled': 'Cancelled'
 };
