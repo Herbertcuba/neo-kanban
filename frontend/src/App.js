@@ -18,6 +18,10 @@ const STATUS_CONFIG = {
 
 const COLUMN_ORDER = ['ideas', 'backlog', 'todo', 'doing', 'review', 'blog-publish', 'done', 'cancelled'];
 
+const ArchiveIcon = ({ size = 16 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+);
+
 function App() {
   const [tasks, setTasks] = useState({
     backlog: [],
@@ -152,6 +156,19 @@ function App() {
     } catch (error) {
       console.error('Error opening folder:', error);
       showStatus('Error opening folder', 'error');
+    }
+  };
+
+  const archiveTask = async (task, status) => {
+    if (!window.confirm(`Are you sure you want to archive "${task.title}"?`)) return;
+    
+    try {
+      await axios.put(`/api/tasks/${status}/${task.id}/move/archive`);
+      showStatus(`Archived "${task.title}"`, 'success');
+      loadTasks();
+    } catch (error) {
+      console.error('Error archiving task:', error);
+      showStatus('Error archiving task', 'error');
     }
   };
 
@@ -309,15 +326,28 @@ function App() {
                               <span className="task-files">{task.files} files</span>
                               <span className="task-date">{task.created}</span>
                             </div>
-                            <button
-                              className="task-folder-btn"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openInFinder(task, status);
-                              }}
-                            >
-                              <ExternalLink size={14} />
-                            </button>
+                            <div className="task-actions">
+                              <button
+                                className="task-action-btn archive-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  archiveTask(task, status);
+                                }}
+                                title="Archive task"
+                              >
+                                <ArchiveIcon size={14} />
+                              </button>
+                              <button
+                                className="task-action-btn open-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openInFinder(task, status);
+                                }}
+                                title="Open in Finder"
+                              >
+                                <ExternalLink size={14} />
+                              </button>
+                            </div>
                           </div>
                         )}
                       </Draggable>

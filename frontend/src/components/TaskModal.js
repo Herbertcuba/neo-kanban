@@ -12,6 +12,18 @@ const TaskModal = ({ task, onClose, onOpenInFinder, onUpdate, onNavigate }) => {
   const [editedDescription, setEditedDescription] = useState('');
   const [editedFeedback, setEditedFeedback] = useState('');
   const [fileNames, setFileNames] = useState([]);
+  const [moving, setMoving] = useState(false);
+
+  const STATUS_CONFIG = {
+    ideas: { title: '💡 Ideas', color: '#a78bfa' },
+    backlog: { title: '📋 Backlog', color: '#94a3b8' },
+    todo: { title: '📌 Todo', color: '#60a5fa' },
+    doing: { title: '🔨 Doing', color: '#fbbf24' },
+    review: { title: '👀 Review', color: '#f59e0b' },
+    'blog-publish': { title: '🌐 Blog Publish', color: '#b0ff00' },
+    done: { title: '✅ Done', color: '#4ade80' },
+    cancelled: { title: '❌ Cancelled', color: '#ef4444' }
+  };
 
   useEffect(() => {
     loadTaskDetails();
@@ -32,6 +44,20 @@ const TaskModal = ({ task, onClose, onOpenInFinder, onUpdate, onNavigate }) => {
       setDescription(task.description || 'Error loading description');
       setFeedback('');
       setLoading(false);
+    }
+  };
+
+  const moveTask = async (toStatus) => {
+    if (toStatus === task.status) return;
+    try {
+      setMoving(true);
+      await axios.put(`/api/tasks/${task.status}/${task.id}/move/${toStatus}`);
+      onUpdate();
+      onClose();
+    } catch (error) {
+      console.error('Error moving task:', error);
+      alert('Error moving task');
+      setMoving(false);
     }
   };
 
@@ -279,12 +305,29 @@ const TaskModal = ({ task, onClose, onOpenInFinder, onUpdate, onNavigate }) => {
         </div>
 
         <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>
-            Close
-          </button>
-          <button className="btn btn-primary" onClick={onOpenInFinder}>
-            <ExternalLink size={16} /> Open in Finder
-          </button>
+          <div className="move-to-section">
+            <span className="move-label">Move to:</span>
+            <select 
+              className="move-dropdown" 
+              value={task.status} 
+              onChange={(e) => moveTask(e.target.value)}
+              disabled={moving}
+            >
+              {Object.entries(STATUS_CONFIG).map(([status, config]) => (
+                <option key={status} value={status}>
+                  {config.title}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="footer-actions">
+            <button className="btn btn-secondary" onClick={onClose}>
+              Close
+            </button>
+            <button className="btn btn-primary" onClick={onOpenInFinder}>
+              <ExternalLink size={16} /> Open in Finder
+            </button>
+          </div>
         </div>
       </div>
     </div>

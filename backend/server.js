@@ -18,7 +18,8 @@ const STATUS_DIRS = {
   'review': 'Review',
   'blog-publish': 'Blog-publish',
   'done': 'Done',
-  'cancelled': 'Cancelled'
+  'cancelled': 'Cancelled',
+  'archive': 'Archive'
 };
 
 // Middleware
@@ -65,6 +66,9 @@ async function scanTasks() {
   const tasks = {};
   
   for (const [status, dirName] of Object.entries(STATUS_DIRS)) {
+    // Skip archive folder in the UI scan
+    if (status === 'archive') continue;
+
     const statusPath = path.join(TASKS_BASE_PATH, dirName);
     tasks[status] = [];
     
@@ -120,10 +124,18 @@ async function scanTasks() {
               files: fileCount,
               fileNames,
               created: dateMatch ? dateMatch[1] : new Date().toISOString().split('T')[0],
-              path: itemPath
+              path: itemPath,
+              mtime: stats.mtime
             });
           }
         }
+
+        // Sort tasks chronologically: newest first (top), oldest last (bottom)
+        tasks[status].sort((a, b) => {
+          const dateA = new Date(a.created);
+          const dateB = new Date(b.created);
+          return dateB - dateA;
+        });
       }
     } catch (error) {
       console.error(`Error scanning ${status}:`, error);
